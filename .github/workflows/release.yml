@@ -1,0 +1,29 @@
+name: Package Addon
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Package zip
+        run: |
+          mkdir -p build/StanceBarPager
+          cp StanceBarPager.toc StanceBarPager.lua build/StanceBarPager/
+          cp -i readme.md license README.md LICENSE build/StanceBarPager/ 2>/dev/null || true
+          cd build
+          zip -r ../StanceBarPager-${{ github.ref_name }}.zip StanceBarPager
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: StanceBarPager-${{ github.ref_name }}.zip
