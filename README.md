@@ -22,7 +22,7 @@ A lightweight, zero-dependency *World of Warcraft: Forever* add-on that dynamica
 3. Click any stance/form button to assign an unused action page (such as **Page 13, 14, or 15**).
 4. **Adding spells to Pages 13–15:** Temporarily enable **Action Bar 6, 7, or 8** in Blizzard's Edit Mode, drag your stance-specific abilities onto them, and hide those bars again. Your configured bar will automatically pull those spells when you enter that stance.
 
-# A note on AI Usage
+## A note on AI Usage
 Please note: I did use AI to assist in the writing of this add-on. 
 
 Additionally, I did use AI to generate the icon for this add-on as well. 
