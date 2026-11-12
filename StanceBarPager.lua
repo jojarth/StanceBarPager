@@ -161,7 +161,7 @@ local function GetPageStatus(pageNum, currentBarId, currentStanceKey)
     return statusStr, isBlocked
 end
 
-local SECURE_SNIPPET = "local page = tonumber(newstate)\nif not page then return end\nlocal bar = self:GetFrameRef('bar')\nif bar then bar:SetAttribute('actionpage', page) end\nfor i = 1, 12 do\nlocal btn = self:GetFrameRef('btn' .. i)\nif btn then\nbtn:SetAttribute('actionpage', page)\nbtn:SetAttribute('action', (page - 1) * 12 + i)\nend\nend"
+local SECURE_SNIPPET = "local page = tonumber(newstate)\nif not page then return end\nlocal bar = self:GetFrameRef('bar')\nif bar then bar:SetAttribute('actionpage', page) end\nfor i = 1, 12 do\nlocal btn = self:GetFrameRef('btn' .. i)\nif btn then\nbtn:SetAttribute('actionpage', page)\nbtn:SetAttribute('action', (page - 1) * 12 + i)\nbtn:CallMethod('UpdateAction', true)\nend\nend"
 
 local function ApplyPagingRules()
     if InCombatLockdown() then
@@ -178,15 +178,10 @@ local function ApplyPagingRules()
                 for btnIdx = 1, 12 do
                     local btn = _G[bar.frame .. "Button" .. btnIdx]
                     if btn then
+                        -- Do NOT hook scripts or call methods on Blizzard action buttons from
+                        -- addon code: it taints them and blocks Logout()/Quit(). The secure
+                        -- snippet refreshes the button via CallMethod instead.
                         handler:SetFrameRef("btn" .. btnIdx, btn)
-                        if not btn.sbpHooked then
-                            btn:HookScript("OnAttributeChanged", function(self, name)
-                                if (name == "actionpage" or name == "action") and self.UpdateAction then
-                                    self:UpdateAction(true)
-                                end
-                            end)
-                            btn.sbpHooked = true
-                        end
                     end
                 end
                 handler:SetAttribute("_onstate-stancepage", SECURE_SNIPPET)
@@ -240,7 +235,7 @@ local function ImportProfileString(str)
         for barChunk in string.gmatch(body, "[^;]+") do
             local tokens = {}
             for tok in string.gmatch(barChunk, "[^,]+") do table.insert(tokens, tok) end
-            local barId = tonumber(tokens)
+            local barId = tonumber(tokens[1])
             if barId and newDB[barId] then
                 for i = 2, #tokens do
                     local k, v = string.match(tokens[i], "^(s[0-4])=(%d+)$")
