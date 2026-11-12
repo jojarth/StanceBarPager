@@ -15,35 +15,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Package zip and metadata
+      - name: Package zip
         run: |
           mkdir -p build/StanceBarPager
           cp StanceBarPager.toc StanceBarPager.lua build/StanceBarPager/
           cp -i readme.md license README.md LICENSE build/StanceBarPager/ 2>/dev/null || true
           cd build
           zip -r ../StanceBarPager-${{ github.ref_name }}-forever.zip StanceBarPager
-          cd ..
-          INTERFACE_VER=$(grep -i "## Interface:" StanceBarPager.toc | awk '{print $3}' | tr -d '\r')
-          cat <<EOF > release.json
-          {
-            "releases": [
-              {
-                "filename": "StanceBarPager-${{ github.ref_name }}-forever.zip",
-                "nolib": false,
-                "metadata": [
-                  {
-                    "flavor": "classic",
-                    "interface": ${INTERFACE_VER:-11503}
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            StanceBarPager-${{ github.ref_name }}-forever.zip
-            release.json
+          files: StanceBarPager-${{ github.ref_name }}-forever.zip
