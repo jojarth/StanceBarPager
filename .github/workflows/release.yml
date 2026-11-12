@@ -19,7 +19,9 @@ jobs:
         run: |
           mkdir -p build/StanceBarPager
           cp StanceBarPager.toc StanceBarPager.lua build/StanceBarPager/
-          cp -i readme.md license README.md LICENSE build/StanceBarPager/ 2>/dev/null || true
+          cp -i readme.md license README.md LICENSE build/StanceBarPager/
+          cp StanceBarPager.toc StanceBarPager.lua sbp_icon.png build/StanceBarPager/
+          2>/dev/null || true
           cd build
           zip -r ../StanceBarPager-${{ github.ref_name }}-forever.zip StanceBarPager
 

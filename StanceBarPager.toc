@@ -4,5 +4,7 @@
 ## Author: Custom
 ## Version: 1.0.5
 ## SavedVariablesPerCharacter: StanceBarPagerDB
+## IconTexture: Interface\AddOns\StanceBarPager\sbp_icon
+
 
 StanceBarPager.lua
