@@ -2,7 +2,6 @@ local addonName, addon = ...
 
 SLASH_STANCEBARPAGER1 = "/sbp"
 SLASH_STANCEBARPAGER2 = "/stancebar"
-SLASH_STANCEBARPAGER3 = "/sdp"
 SlashCmdList["STANCEBARPAGER"] = function()
     if addon.ToggleWindow then
         addon.ToggleWindow()
@@ -477,7 +476,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         InitDB()
         CreateOptionsUI()
         ApplyPagingRules()
-        print("|cff00ff00StanceBarPager loaded!|r Type |cff88ccff/sbp|r or |cff88ccff/sdp|r to open the config window.")
+        print("|cff00ff00StanceBarPager loaded!|r Type |cff88ccff/sbp|r or |cff88ccff/stancebar|r to open the config window.")
     elseif event == "PLAYER_REGEN_ENABLED" then
         ApplyPagingRules()
     end
