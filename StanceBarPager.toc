@@ -2,7 +2,7 @@
 ## Title: StanceBarPager
 ## Notes: Dynamically pages Action Bars 2-5 based on your current stance or form.
 ## Author: Custom
-## Version: 1.0.1
+## Version: 1.0.0
 ## SavedVariablesPerCharacter: StanceBarPagerDB
 ## IconTexture: Interface\AddOns\StanceBarPager\sbp_icon
 
