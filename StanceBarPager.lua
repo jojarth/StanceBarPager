@@ -41,9 +41,35 @@ local CLASS_STANCES = {
     DRUID   = { "Humanoid Form", "Form 1 (Bear)", "Form 2 (Cat)", "Form 3 (Travel)", "Form 4 (Moonkin / Treant)" },
     ROGUE   = { "Normal (Unstealthed)", "Stance 1 (Stealth)", "Stance 2 (Shadow Dance / Vanish)", "Stance 3 (Extra)", "Stance 4 (Extra)" },
     PRIEST  = { "Normal Form", "Form 1 (Shadowform)", "Form 2 (Extra)", "Form 3 (Extra)", "Form 4 (Extra)" },
-    PALADIN = { "No Aura", "Aura 1", "Aura 2", "Aura 3", "Aura 4" },
+    PALADIN = { "No Aura", "Aura 1", "Aura 2", "Aura 3", "Aura 4" }, -- fallbacks; real aura names are read in-game
     DEFAULT = { "Stance 0 (Default)", "Stance 1", "Stance 2", "Stance 3", "Stance 4" },
 }
+
+-- Classes whose row labels should come from the live stance bar instead of the static table
+-- (e.g. paladin aura order depends on which auras the character has learned).
+local LIVE_NAME_CLASSES = { PALADIN = true }
+
+local function GetFormSpellName(formIdx)
+    if not GetShapeshiftFormInfo or formIdx > (GetNumShapeshiftForms and GetNumShapeshiftForms() or 0) then
+        return nil
+    end
+    local _, _, _, spellID = GetShapeshiftFormInfo(formIdx)
+    if not spellID then return nil end
+    if C_Spell and C_Spell.GetSpellName then
+        return C_Spell.GetSpellName(spellID)
+    elseif GetSpellInfo then
+        return (GetSpellInfo(spellID))
+    end
+end
+
+local function GetStanceLabel(playerClass, stanceIdx)
+    local stanceNames = CLASS_STANCES[playerClass] or CLASS_STANCES.DEFAULT
+    if stanceIdx > 0 and LIVE_NAME_CLASSES[playerClass] then
+        local liveName = GetFormSpellName(stanceIdx)
+        if liveName then return liveName end
+    end
+    return stanceNames[stanceIdx + 1] or ("Stance " .. stanceIdx)
+end
 
 local stateHandlers = {}
 
@@ -243,7 +269,6 @@ local function CreateOptionsUI()
     win.TitleText:SetText("StanceBarPager - Stance & Form Bar Paging")
 
     local _, playerClass = UnitClass("player")
-    local stanceNames = CLASS_STANCES[playerClass] or CLASS_STANCES.DEFAULT
     local selectedBarId = 2
     local selectorButtons = {}
     local showBlocked = false
@@ -363,11 +388,18 @@ local function CreateOptionsUI()
     stanceHeader:SetPoint("TOPLEFT", barLabel, "BOTTOMLEFT", 0, -50)
     stanceHeader:SetText("2. Click a Button Below to Assign a Page per Stance / Form:")
 
+    local rowLabels = {}
+    local function RefreshStanceLabels()
+        for idx, fs in pairs(rowLabels) do
+            fs:SetText(GetStanceLabel(playerClass, idx))
+        end
+    end
+
     for stanceIdx = 0, 4 do
         local key = "s" .. stanceIdx
         local rowLabel = win:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
         rowLabel:SetPoint("TOPLEFT", stanceHeader, "BOTTOMLEFT", 0, -18 - (stanceIdx * 38))
-        rowLabel:SetText(stanceNames[stanceIdx + 1] or ("Stance " .. stanceIdx))
+        rowLabels[stanceIdx] = rowLabel
 
         local selBtn = CreateFrame("Button", nil, win, "UIPanelButtonTemplate")
         selBtn:SetSize(370, 26)
@@ -376,9 +408,10 @@ local function CreateOptionsUI()
         selectorButtons[key] = selBtn
     end
 
+    RefreshStanceLabels()
     RefreshSelectorButtons()
 
-    local tip = win:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local tip =win:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     tip:SetPoint("BOTTOMLEFT", 18, 14)
     tip:SetWidth(425)
     tip:SetJustifyH("LEFT")
@@ -450,6 +483,7 @@ local function CreateOptionsUI()
             ieWin:Hide()
             win:Hide()
         else
+            RefreshStanceLabels()
             RefreshSelectorButtons()
             win:Show()
         end
