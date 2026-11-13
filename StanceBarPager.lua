@@ -161,7 +161,24 @@ local function GetPageStatus(pageNum, currentBarId, currentStanceKey)
     return statusStr, isBlocked
 end
 
-local SECURE_SNIPPET = "local page = tonumber(newstate)\nif not page then return end\nlocal bar = self:GetFrameRef('bar')\nif bar then bar:SetAttribute('actionpage', page) end\nfor i = 1, 12 do\nlocal btn = self:GetFrameRef('btn' .. i)\nif btn then\nbtn:SetAttribute('actionpage', page)\nbtn:SetAttribute('action', (page - 1) * 12 + i)\nbtn:CallMethod('UpdateAction', true)\nend\nend"
+-- Do NOT use btn:CallMethod('UpdateAction') here. CallMethod runs the method insecurely
+-- ("*** TaintForced ***"), which taints the button's fields (self.action, etc.). The next
+-- time Blizzard's OnEnter -> UpdateAction -> UpdatePressAndHoldAction runs in combat it hits
+-- SetAttribute() on a tainted path and gets ADDON_ACTION_BLOCKED. Setting the 'action'
+-- attribute already fires the button's OnAttributeChanged, which calls UpdateAction securely.
+local SECURE_SNIPPET = [[
+local page = tonumber(newstate)
+if not page then return end
+local bar = self:GetFrameRef('bar')
+if bar then bar:SetAttribute('actionpage', page) end
+for i = 1, 12 do
+    local btn = self:GetFrameRef('btn' .. i)
+    if btn then
+        btn:SetAttribute('actionpage', page)
+        btn:SetAttribute('action', (page - 1) * 12 + i)
+    end
+end
+]]
 
 local function ApplyPagingRules()
     if InCombatLockdown() then
